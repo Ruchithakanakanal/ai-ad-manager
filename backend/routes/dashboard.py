@@ -12,7 +12,7 @@ import boto3
 from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.auth_utils import get_current_user
+from auth_utils import get_current_user
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from backend.services.facebook_adset_service import create_adset
-from backend.services.facebook_creative_service import create_creative
+from services.facebook_adset_service import create_adset
+from services.facebook_creative_service import create_creative
 
 import boto3
 import json
@@ -13,10 +13,10 @@ import os
 
 from dotenv import load_dotenv
 
-from backend.auth_security import create_access_token
-from backend.database import engine, get_db, Base
-from backend.models.ad_models import Campaign
-from backend.services.facebook_service import create_facebook_campaign
+from auth_security import create_access_token
+from database import engine, get_db, Base
+from models.ad_models import Campaign
+from services.facebook_service import create_facebook_campaign
 
 # ---------------------------------------------------
 # LOAD ENV

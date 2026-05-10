@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
-from backend.auth_security import (
+from auth_security import (
     create_access_token,
     verify_password,
     decode_token,
