@@ -6,7 +6,7 @@ import axios, {
 
 // ─── BASE URL ─────────────────────────────────────────────
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+  import.meta.env.VITE_API_URL ?? 'https://ai-ad-manager-7-5k1y.onrender.com'
 
 // ─── TOKEN STORAGE (FIXED) ───────────────────────────────
 // Now supports BOTH memory + localStorage for refresh stability
