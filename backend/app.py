@@ -78,13 +78,17 @@ Base.metadata.create_all(bind=engine)
 # CORS
 # ---------------------------------------------------
 
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # later replace with your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 # ---------------------------------------------------
 # AWS BEDROCK CLIENT
