@@ -1,28 +1,47 @@
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-# SQLite Database
-DATABASE_URL = "sqlite:///./ai_campaign.db"
+# =========================
+# DATABASE CONFIG (POSTGRES)
+# =========================
 
-# Create Engine
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Safety check (helps debugging on Render)
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set in environment variables")
+
+# =========================
+# CREATE ENGINE
+# =========================
+
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    pool_pre_ping=True
 )
 
-# Session
+# =========================
+# SESSION SETUP
+# =========================
+
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine
 )
 
-# Base Class
+# =========================
+# BASE MODEL
+# =========================
+
 Base = declarative_base()
 
+# =========================
+# DB DEPENDENCY
+# =========================
 
-# Dependency
 def get_db():
     db = SessionLocal()
     try:

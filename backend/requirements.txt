@@ -5,3 +5,4 @@ requests
 python-dotenv
 python-jose[cryptography]
 sqlalchemy
+asyncpg
