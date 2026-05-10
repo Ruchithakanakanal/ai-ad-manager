@@ -1,0 +1,235 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.breadcrumb {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.breadcrumbLink {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSep {
+  color: #444;
+}
+
+.breadcrumbCurrent {
+  color: #aaa;
+}
+
+.heading {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+/* ─── Charts ───────────────────────────────────────────────────────────────── */
+
+.chartsSection {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 1.5rem;
+}
+
+.chartCard {
+  background: #0f0f1a;
+  border: 1px solid #2a2a4a;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.chartTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Recommendations ──────────────────────────────────────────────────────── */
+
+.recsSection {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.applyMsg {
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  background: #0f1e0f;
+  border: 1px solid #15803d55;
+  color: #86efac;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.recsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.recCard {
+  background: #0f0f1a;
+  border: 1px solid #2a2a4a;
+  border-radius: 8px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.recCard:hover {
+  border-color: #6366f155;
+}
+
+.recApplied {
+  border-color: #15803d55 !important;
+  background: #0a1a0a;
+}
+
+.recHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.recGoal {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.recConfidence {
+  font-size: 0.75rem;
+  color: #10b981;
+  margin-left: auto;
+}
+
+.lowConf {
+  color: #f59e0b !important;
+}
+
+.appliedBadge {
+  font-size: 0.75rem;
+  color: #86efac;
+  font-weight: 600;
+}
+
+.recAction {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.recValues {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recValue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.recValueLabel {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.recValueNum {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  font-variant-numeric: tabular-nums;
+}
+
+.recArrow {
+  color: #6366f1;
+  font-size: 1.1rem;
+}
+
+.recReasoning {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.5;
+}
+
+.recFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.recDate {
+  font-size: 0.72rem;
+  color: #555;
+}
+
+.applyBtn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #6366f1;
+  background: transparent;
+  color: #a5b4fc;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.applyBtn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.applyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty {
+  color: #666;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}

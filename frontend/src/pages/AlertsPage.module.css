@@ -1,0 +1,206 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.heading {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+/* ─── Form ─────────────────────────────────────────────────────────────────── */
+
+.formSection {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #b0b0c0;
+}
+
+.input,
+.select {
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #2a2a4a;
+  background: #0f0f1a;
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input:disabled,
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input::placeholder {
+  color: #444;
+}
+
+.formError {
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  background: #1e1010;
+  border: 1px solid #7f1d1d55;
+  color: #fca5a5;
+  font-size: 0.85rem;
+}
+
+.formSuccess {
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  background: #0f1e0f;
+  border: 1px solid #15803d55;
+  color: #86efac;
+  font-size: 0.85rem;
+}
+
+.submitBtn {
+  align-self: flex-start;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  border: none;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Alert Cards ──────────────────────────────────────────────────────────── */
+
+.alertsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.alertCard {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 10px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.alertHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.alertMetric {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  letter-spacing: 0.05em;
+}
+
+.alertDirection {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.above {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.below {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.alertMeta {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.alertLabel {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.alertValue {
+  color: #ccc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  color: #666;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}

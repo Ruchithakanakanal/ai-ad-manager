@@ -1,0 +1,115 @@
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  height: 56px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+
+.logo {
+  font-size: 1.4rem;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.links {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.link {
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  color: #b0b0c0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.link.active {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.roleTag {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.roleTag[data-role='admin'] {
+  background: #7c3aed22;
+  color: #c4b5fd;
+  border: 1px solid #7c3aed55;
+}
+
+.roleTag[data-role='analyst'] {
+  background: #0369a122;
+  color: #7dd3fc;
+  border: 1px solid #0369a155;
+}
+
+.roleTag[data-role='viewer'] {
+  background: #15803d22;
+  color: #86efac;
+  border: 1px solid #15803d55;
+}
+
+.email {
+  font-size: 0.8rem;
+  color: #888;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logoutBtn {
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: transparent;
+  color: #ccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.logoutBtn:hover {
+  background: #ef444422;
+  color: #fca5a5;
+  border-color: #ef444455;
+}
