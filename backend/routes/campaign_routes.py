@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from services.ai_engine import generate_ad
+from backend.services.ai_engine import generate_ad
 
 router = APIRouter()
 
