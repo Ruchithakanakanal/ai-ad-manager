@@ -7,13 +7,15 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from backend.routes.auth import router as auth_router
-from backend.routes.campaigns import router as campaigns_router
-from backend.routes.dashboard import router as dashboard_router
-from backend.routes.alerts import router as alerts_router
-from backend.routes.campaign_routes import router as legacy_campaign_router
+from routes.auth import router as auth_router
+from routes.campaign_routes import router as campaigns_router
+from routes.dashboard import router as dashboard_router
+from routes.alerts import router as alerts_router
+from routes.campaign_routes import router as legacy_campaign_router
 
-from backend.auth_security import decode_token
+from auth_security import decode_token
+
+
 
 logger = logging.getLogger(__name__)
 
