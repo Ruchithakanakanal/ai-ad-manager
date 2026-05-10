@@ -1,5 +1,9 @@
 fastapi
 uvicorn
-openai
+requests
 python-dotenv
-pandas
+python-jose[cryptography]
+sqlalchemy
+boto3
+passlib[bcrypt]
+psycopg[binary]

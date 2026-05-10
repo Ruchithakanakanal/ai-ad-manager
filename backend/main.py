@@ -13,7 +13,7 @@ from backend.routes.dashboard import router as dashboard_router
 from backend.routes.alerts import router as alerts_router
 from backend.routes.campaign_routes import router as legacy_campaign_router
 
-from auth_security import decode_token
+from backend.auth_security import decode_token
 
 
 
