@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -9,15 +10,18 @@ import re
 import requests
 import os
 from pathlib import Path
+from urllib.parse import urlencode
 
 from dotenv import load_dotenv
 
 # Load environment variables before importing modules that read DATABASE_URL.
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
-from backend.auth_security import create_access_token
+from backend.auth_security import create_access_token, decode_token
 from backend.database import engine, get_db, Base
 from backend.models.ad_models import Campaign
+from backend.models.facebook_connection import FacebookConnection
+from backend.services import facebook_oauth
 from backend.services.facebook_adset_service import create_adset
 from backend.services.facebook_creative_service import create_creative
 from backend.services.facebook_service import create_facebook_campaign
@@ -33,6 +37,66 @@ from backend.services.facebook_service import create_facebook_campaign
 FACEBOOK_ACCESS_TOKEN = (os.getenv("FACEBOOK_ACCESS_TOKEN") or "").strip()
 
 FACEBOOK_AD_ACCOUNT_ID = (os.getenv("FACEBOOK_AD_ACCOUNT_ID") or "").strip()
+
+# Frontend base URL the OAuth callback redirects back to after connecting.
+FRONTEND_URL = (
+    os.getenv("FRONTEND_URL")
+    or "https://d11f0u0whqm0je.cloudfront.net"
+).rstrip("/")
+
+# Optional explicit OAuth redirect (must be registered in the Facebook app).
+# When unset, it is derived from the incoming request's base URL.
+FACEBOOK_OAUTH_REDIRECT_URI = (os.getenv("FACEBOOK_OAUTH_REDIRECT_URI") or "").strip()
+
+
+def _oauth_redirect_uri(request: Request) -> str:
+    if FACEBOOK_OAUTH_REDIRECT_URI:
+        return FACEBOOK_OAUTH_REDIRECT_URI
+    base = str(request.base_url).rstrip("/")
+    return f"{base}/facebook/callback"
+
+
+def get_current_identity(request: Request) -> str:
+    """Extract the logged-in user's identity from the Bearer JWT."""
+    auth_header = request.headers.get("Authorization", "")
+
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing token")
+
+    payload = decode_token(auth_header.split(" ", 1)[1].strip())
+
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    identity = (payload.get("sub") or payload.get("email") or "").strip().lower()
+
+    if not identity:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+
+    return identity
+
+
+def resolve_fb_credentials(request: Request, db: Session) -> tuple[str, str]:
+    """Return (access_token, ad_account_id) for the current request.
+
+    Prefers the logged-in user's connected Facebook account; falls back to
+    the server-wide env credentials when the user has not connected one.
+    """
+    try:
+        identity = get_current_identity(request)
+    except HTTPException:
+        identity = None
+
+    if identity:
+        conn = (
+            db.query(FacebookConnection)
+            .filter(FacebookConnection.user_key == identity)
+            .first()
+        )
+        if conn and conn.access_token:
+            return conn.access_token, (conn.ad_account_id or FACEBOOK_AD_ACCOUNT_ID)
+
+    return FACEBOOK_ACCESS_TOKEN, FACEBOOK_AD_ACCOUNT_ID
 
 # ---------------------------------------------------
 # LOGIN MODEL
@@ -359,18 +423,196 @@ def publish_facebook(request: PublishFacebookRequest):
     }
 
 # ---------------------------------------------------
+# CONNECT FACEBOOK — PER-USER OAUTH
+# ---------------------------------------------------
+
+
+def _serialize_connection(conn: FacebookConnection) -> dict:
+    try:
+        ad_accounts = json.loads(conn.ad_accounts) if conn.ad_accounts else []
+    except (ValueError, TypeError):
+        ad_accounts = []
+
+    return {
+        "connected": True,
+        "fb_user_name": conn.fb_user_name,
+        "fb_user_id": conn.fb_user_id,
+        "ad_account_id": conn.ad_account_id,
+        "ad_accounts": ad_accounts,
+    }
+
+
+@app.get("/facebook/status")
+def facebook_status(request: Request, db: Session = Depends(get_db)):
+    """Return the current user's Facebook connection status."""
+    identity = get_current_identity(request)
+
+    conn = (
+        db.query(FacebookConnection)
+        .filter(FacebookConnection.user_key == identity)
+        .first()
+    )
+
+    if not conn:
+        return {"connected": False, "configured": facebook_oauth.is_configured()}
+
+    result = _serialize_connection(conn)
+    result["configured"] = facebook_oauth.is_configured()
+    return result
+
+
+@app.get("/facebook/oauth-url")
+def facebook_oauth_url(request: Request):
+    """Build the Facebook login URL for the current user to authorize."""
+    identity = get_current_identity(request)
+
+    if not facebook_oauth.is_configured():
+        raise HTTPException(
+            status_code=503,
+            detail="Facebook app is not configured. Set FACEBOOK_APP_ID and "
+                   "FACEBOOK_APP_SECRET on the backend.",
+        )
+
+    # The state is a short-lived signed token tying the callback to this user.
+    state = create_access_token({"sub": identity, "purpose": "fb_oauth"})
+
+    url = facebook_oauth.build_login_url(state, _oauth_redirect_uri(request))
+
+    return {"url": url, "configured": True}
+
+
+@app.get("/facebook/callback")
+def facebook_callback(
+    request: Request,
+    db: Session = Depends(get_db),
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+    error_description: str | None = None,
+):
+    """OAuth redirect target. Exchanges the code and stores the user's token."""
+
+    def _redirect(status_value: str, message: str = "") -> RedirectResponse:
+        query = {"fb": status_value}
+        if message:
+            query["message"] = message
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}/dashboard/connect-facebook?{urlencode(query)}"
+        )
+
+    if error:
+        return _redirect("error", error_description or error)
+
+    if not code or not state:
+        return _redirect("error", "Missing authorization code")
+
+    payload = decode_token(state)
+    if not payload or payload.get("purpose") != "fb_oauth":
+        return _redirect("error", "Invalid or expired login state")
+
+    identity = (payload.get("sub") or "").strip().lower()
+    if not identity:
+        return _redirect("error", "Invalid login state")
+
+    try:
+        redirect_uri = _oauth_redirect_uri(request)
+        short_token = facebook_oauth.exchange_code_for_token(code, redirect_uri)
+        access_token = facebook_oauth.get_long_lived_token(short_token)
+        profile = facebook_oauth.fetch_user_profile(access_token)
+        ad_accounts = facebook_oauth.fetch_ad_accounts(access_token)
+    except Exception as exc:  # noqa: BLE001 - surface a friendly message to UI
+        return _redirect("error", str(exc))
+
+    default_ad_account = ad_accounts[0]["id"] if ad_accounts else FACEBOOK_AD_ACCOUNT_ID
+
+    conn = (
+        db.query(FacebookConnection)
+        .filter(FacebookConnection.user_key == identity)
+        .first()
+    )
+
+    if not conn:
+        conn = FacebookConnection(user_key=identity)
+        db.add(conn)
+
+    conn.fb_user_id = profile.get("id")
+    conn.fb_user_name = profile.get("name")
+    conn.access_token = access_token
+    conn.ad_account_id = conn.ad_account_id or default_ad_account
+    conn.ad_accounts = json.dumps(ad_accounts)
+
+    db.commit()
+
+    return _redirect("connected")
+
+
+class SelectAdAccountRequest(BaseModel):
+    ad_account_id: str
+
+
+@app.post("/facebook/select-ad-account")
+def facebook_select_ad_account(
+    payload: SelectAdAccountRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Set which connected ad account the user wants to use."""
+    identity = get_current_identity(request)
+
+    conn = (
+        db.query(FacebookConnection)
+        .filter(FacebookConnection.user_key == identity)
+        .first()
+    )
+
+    if not conn:
+        raise HTTPException(status_code=404, detail="No Facebook account connected")
+
+    conn.ad_account_id = payload.ad_account_id.strip()
+    db.commit()
+
+    return _serialize_connection(conn)
+
+
+@app.post("/facebook/disconnect")
+def facebook_disconnect(request: Request, db: Session = Depends(get_db)):
+    """Remove the current user's stored Facebook connection."""
+    identity = get_current_identity(request)
+
+    conn = (
+        db.query(FacebookConnection)
+        .filter(FacebookConnection.user_key == identity)
+        .first()
+    )
+
+    if conn:
+        db.delete(conn)
+        db.commit()
+
+    return {"connected": False}
+
+
+# ---------------------------------------------------
 # GET FACEBOOK CAMPAIGNS
 # ---------------------------------------------------
 
 @app.get("/facebook-campaigns")
-def get_facebook_campaigns():
+def get_facebook_campaigns(request: Request, db: Session = Depends(get_db)):
 
     try:
 
-        url = f"https://graph.facebook.com/v22.0/{FACEBOOK_AD_ACCOUNT_ID}/campaigns"
+        access_token, ad_account_id = resolve_fb_credentials(request, db)
+
+        if not access_token or not ad_account_id:
+            raise HTTPException(
+                status_code=400,
+                detail="No Facebook account connected. Use Connect Facebook first.",
+            )
+
+        url = f"https://graph.facebook.com/v22.0/{ad_account_id}/campaigns"
 
         params = {
-            "access_token": FACEBOOK_ACCESS_TOKEN
+            "access_token": access_token
         }
 
         response = requests.get(
@@ -379,6 +621,9 @@ def get_facebook_campaigns():
         )
 
         return response.json()
+
+    except HTTPException:
+        raise
 
     except Exception as e:
 
@@ -396,11 +641,23 @@ def get_facebook_campaigns():
 # ---------------------------------------------------
 
 @app.post("/create-facebook-campaign")
-def create_fb_campaign(request: PublishFacebookRequest):
+def create_fb_campaign(
+    request: PublishFacebookRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+):
 
     try:
 
-        url = f"https://graph.facebook.com/v22.0/{FACEBOOK_AD_ACCOUNT_ID}/campaigns"
+        access_token, ad_account_id = resolve_fb_credentials(http_request, db)
+
+        if not access_token or not ad_account_id:
+            raise HTTPException(
+                status_code=400,
+                detail="No Facebook account connected. Use Connect Facebook first.",
+            )
+
+        url = f"https://graph.facebook.com/v22.0/{ad_account_id}/campaigns"
 
         payload = {
 
@@ -418,7 +675,7 @@ def create_fb_campaign(request: PublishFacebookRequest):
                 "true" if request.is_adset_budget_sharing_enabled else "false"
             ),
 
-            "access_token": FACEBOOK_ACCESS_TOKEN
+            "access_token": access_token
         }
 
         response = requests.post(
@@ -438,6 +695,9 @@ def create_fb_campaign(request: PublishFacebookRequest):
             "status": "success",
             "facebook_response": result
         }
+
+    except HTTPException:
+        raise
 
     except Exception as e:
 
