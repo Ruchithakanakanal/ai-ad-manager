@@ -40,6 +40,12 @@ export function NavBar() {
         >
           Alerts
         </Link>
+        <Link
+          to="/dashboard/connect-facebook"
+          className={`${styles.link} ${isActive('/dashboard/connect-facebook') ? styles.active : ''}`}
+        >
+          Connect Facebook
+        </Link>
       </div>
 
       <div className={styles.user}>

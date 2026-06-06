@@ -18,6 +18,8 @@ import { AlertsPage } from './pages/AlertsPage'
 
 import { CreateCampaignPage } from './pages/CreateCampaignPage'
 
+import { ConnectFacebookPage } from './pages/ConnectFacebookPage'
+
 export function App() {
 
   return (
@@ -66,6 +68,11 @@ export function App() {
             <Route
               path="/dashboard/create-campaign"
               element={<CreateCampaignPage />}
+            />
+
+            <Route
+              path="/dashboard/connect-facebook"
+              element={<ConnectFacebookPage />}
             />
 
           </Route>
